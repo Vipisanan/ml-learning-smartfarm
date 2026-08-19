@@ -1,0 +1,79 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+# =========================
+# Python virtual environment
+# =========================
+smartfarm-ml/
+.venv/
+venv/
+env/
+ENV/
+
+# If the virtual environment is the project root itself
+bin/
+lib/
+include/
+etc/
+share/
+pyvenv.cfg
+
+# =========================
+# Python cache
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# macOS
+# =========================
+.DS_Store
+
+# =========================
+# Python packaging
+# =========================
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# =========================
+# Environment / secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# ML generated files
+# =========================
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.onnx
+*.pt
+*.pth
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
