@@ -1,0 +1,4 @@
+crop_type,soil_moisture,air_humidity,temperature,rule_label
+tomato,40.0,70.0,30.0,1
+chili,52.0,66.0,28.0,0
+tomato,30.0,80.0,33.0,1
