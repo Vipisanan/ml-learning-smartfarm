@@ -16,6 +16,14 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 import joblib
 import pandas as pd
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+
+logger = logging.getLogger("smartfarm")
 
 # --- Load everything once at startup (like a Spring @PostConstruct / bean init) ---
 app = FastAPI(title="SmartFarm Irrigation Predictor — Tier 1 (local)")
@@ -76,19 +84,48 @@ def rules_decision(r: SensorReading) -> tuple[str, str]:
 
 @app.post("/predict", response_model=Decision)
 def predict(reading: SensorReading) -> Decision:
+
+    logger.info(
+        "PREDICT request | crop=%s | soil=%.1f%% | humidity=%.1f%% | temp=%.1f°C",
+        reading.crop_type,
+        reading.soil_moisture,
+        reading.air_humidity,
+        reading.temperature,
+    )
+
     # --- Gate 1: sensor garbage -> rules, no exceptions ---
     if not validate_reading(reading):
+        logger.warning(
+            "FAIL-SAFE | invalid sensor reading | crop=%s | soil=%.1f | humidity=%.1f | temp=%.1f",
+            reading.crop_type,
+            reading.soil_moisture,
+            reading.air_humidity,
+            reading.temperature,
+        )
         return Decision(decision="no_water", confidence=-1, source="rules_failsafe",
                          why=(f"FAIL-SAFE: sensor reading is physically impossible "
                               f"(soil={reading.soil_moisture}, humidity={reading.air_humidity}, "
                               f"temp={reading.temperature}) — refusing to act until a valid "
                               f"reading arrives"))
+        
+    logger.info("Validation passed | crop=%s", reading.crop_type)
 
     # --- Gate 2: unseen crop -> the model was never trained on this, don't trust it ---
     if reading.crop_type not in KNOWN_CROPS:
+        logger.warning(
+            "FAIL-SAFE | unknown crop='%s' | using crop-aware rules",
+            reading.crop_type
+        )
         decision, why = rules_decision(reading)
+        logger.info(
+            "RULES decision | decision=%s | crop=%s",
+            decision,
+            reading.crop_type
+        )
         return Decision(decision=decision, confidence=-1, source="rules_failsafe",
                          why=f"FAIL-SAFE (unknown crop '{reading.crop_type}'): {why}")
+
+    logger.info("Crop recognized | crop=%s", reading.crop_type)
 
     # --- Build the exact feature row the model expects, in the exact column order ---
     row = {
@@ -102,13 +139,32 @@ def predict(reading: SensorReading) -> Decision:
 
     X = pd.DataFrame([row])[FEATURE_COLS]   # reindex to guarantee training-time column order
 
+    logger.info(
+        "Features built | soil_deficit=%.1f | feature_count=%d",
+        row["soil_deficit"],
+        len(FEATURE_COLS)
+    )
+
     proba = model.predict_proba(X)[0]        # [P(no_water), P(water)]
     confidence = float(max(proba))
     model_says_water = proba[1] > 0.5
 
+    logger.info(
+        "Model prediction | water_probability=%.3f | no_water_probability=%.3f | confidence=%.3f",
+        proba[1],
+        proba[0],
+        confidence
+    )
+
     # --- Gate 3: model isn't confident enough -> rules ---
     if confidence < CONFIDENCE_THRESHOLD:
         decision, why = rules_decision(reading)
+        logger.warning(
+            "FAIL-SAFE | low model confidence=%.3f < %.2f | using rules | decision=%s",
+            confidence,
+            CONFIDENCE_THRESHOLD,
+            decision
+        )
         return Decision(decision=decision, confidence=confidence, source="rules_failsafe",
                          why=f"FAIL-SAFE (low model confidence {confidence:.2f}): {why}")
 
@@ -117,6 +173,13 @@ def predict(reading: SensorReading) -> Decision:
     why = (f"soil={reading.soil_moisture}%, deficit={row['soil_deficit']:.1f} vs "
            f"{reading.crop_type}'s ideal ({CROP_IDEAL[reading.crop_type]}%), "
            f"temp={reading.temperature}°C")
+    logger.info(
+        "FINAL decision | decision=%s | source=model | confidence=%.3f | crop=%s",
+        decision,
+        confidence,
+        reading.crop_type
+    )
+
     return Decision(decision=decision, confidence=confidence, source="model", why=why)
 
 

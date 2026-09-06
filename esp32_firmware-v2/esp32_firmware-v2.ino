@@ -12,8 +12,8 @@
 #define DEVICE_ID  "VP-Farm-zone1"
 
 // ---- Home WiFi credentials (Station mode — ESP32 JOINS this network) ----
-const char* wifi_ssid = "<VP>";
-const char* wifi_pass = "<VP>";
+const char* wifi_ssid = "Your_WiFi_SSID";
+const char* wifi_pass = "Your_WiFi_Password";
 
 // ---- Laptop running the FastAPI /predict service (Stage 06) ----
 // Must be on the SAME WiFi network as the ESP32. Re-check this if your laptop's
@@ -90,6 +90,8 @@ void classifyLocal(int soil){
 // ---- Call the laptop's /predict endpoint. Returns true if it got a valid answer. ----
 bool callPredictService(int soil, float tempC, float humidity){
   if (WiFi.status() != WL_CONNECTED) return false;
+
+  Serial.printf("predict API call started , Soil, temp, humidity: %d, %.1f, %.1f\n", soil, tempC, humidity);
 
   HTTPClient http;
   String url = "http://" + String(PREDICT_HOST) + ":" + String(PREDICT_PORT) + "/predict";
@@ -267,12 +269,15 @@ void loop(){
   // Ask the local prediction service periodically (not every loop tick — avoid hammering it)
   if (now - lastPredict >= PREDICT_INTERVAL){
     lastPredict = now;
+    Serial.printf("\n Let's call: callPredictService, Soil: %d, Temp: %.1f, Humidity: %.1f\n", liveSoil, liveTemp, liveHumidity);
     bool ok = callPredictService(liveSoil, liveTemp, liveHumidity);
     if (!ok){
       // DOUBLE FAIL-SAFE: laptop/service unreachable -> ESP32's own local rule takes over.
       // The dashboard always shows SOME decision, never a blank/error state.
       Serial.println("predict service unreachable -> using local rule fallback");
       classifyLocal(liveSoil);
+    } else {
+      Serial.println("predict service call succeeded -> using model/rules_failsafe decision");
     }
   }
 }
