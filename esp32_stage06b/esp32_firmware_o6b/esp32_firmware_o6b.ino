@@ -12,8 +12,8 @@
 
 // ---- Home WiFi credentials (Station mode) — still used for the dashboard,
 // but no longer needed to reach a laptop server: inference now runs on-device ----
-const char* wifi_ssid = "<>";
-const char* wifi_pass = "<>";
+const char* wifi_ssid = "<Your_WiFi_SSID>";
+const char* wifi_pass = "<Your_WiFi_Password>";
 
 // ---- Crop this zone is growing ----
 const char* CROP_TYPE = "tomato";   // change per zone: "tomato" | "chili" | "okra"
