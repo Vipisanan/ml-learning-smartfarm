@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VP-Farm</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <!-- Header -->
+      <header class="hdr">
+        <div class="hdr-left">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 21c0-6 3-9 8-9-1 6-4 9-8 9zM12 21c0-6-3-9-8-9 1 6 4 9 8 9zM12 21V9"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span id="deviceName">VP Farm</span>
+        </div>
+        <span id="statusPill" class="pill pill-off">
+          <span class="dot"></span
+          ><span id="statusText" data-i18n="offline">offline</span>
+        </span>
+      </header>
+
+      <!-- Live stat cards -->
+      <section class="stats">
+        <div class="stat">
+          <div class="stat-label">
+            <svg class="ic-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span data-i18n="soil">soil moisture</span>
+          </div>
+          <div class="stat-val">
+            <span id="soil">--</span><span class="unit">%</span>
+          </div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">
+            <svg class="ic-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M10 13V5a2 2 0 0 1 4 0v8a4 4 0 1 1-4 0z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span data-i18n="temp">soil temp</span>
+          </div>
+          <div class="stat-val">
+            <span id="temp">--</span><span class="unit">&deg;C</span>
+          </div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">
+            <svg class="ic-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M4 12h16M4 7h16M4 17h10"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span data-i18n="raw">raw</span>
+          </div>
+          <div class="stat-val"><span id="soilRaw" class="mono">--</span></div>
+        </div>
+      </section>
+
+      <!-- Crop selector -->
+      <section class="card">
+        <div class="chart-head">
+          <span class="chart-title" data-i18n="cropLabel">Crop</span>
+        </div>
+        <select id="cropSelect" class="crop-select"></select>
+        <div id="cropSavedNote" class="crop-note"></div>
+      </section>
+
+      <!-- Recommendation -->
+      <section id="recCard" class="rec rec-ok">
+        <svg id="recIcon" class="rec-ic" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <div class="rec-body">
+          <div class="rec-top">
+            <span id="recVerdict" class="rec-verdict">--</span>
+            <span id="bandChip" class="chip">--</span>
+            <span id="srcBadge" class="src-badge">--</span>
+          </div>
+          <div id="recReason" class="rec-reason">
+            Waiting for sensor&hellip;
+          </div>
+        </div>
+      </section>
+
+      <!-- 24h chart -->
+      <section class="card chart-card">
+        <div class="chart-head">
+          <div class="chart-title-wrap">
+            <span class="chart-title" data-i18n="last24">Last 24 hours</span>
+            <span id="pointCount" class="chart-count mono">0 / 288</span>
+          </div>
+          <div class="legend">
+            <span class="leg"
+              ><span class="swatch sw-m"></span
+              ><span data-i18n="soil_s">moisture</span></span
+            >
+            <span class="leg"
+              ><span class="swatch sw-c"></span
+              ><span data-i18n="temp_s">temp</span></span
+            >
+          </div>
+        </div>
+        <canvas id="chart" height="150"></canvas>
+        <div id="chartEmpty" class="chart-empty" data-i18n="collecting">
+          Collecting data&hellip;
+        </div>
+      </section>
+
+      <!-- Footer: firmware + connection -->
+      <footer class="ftr">
+        <div class="ftr-row">
+          <span id="updated" data-i18n="waiting">waiting&hellip;</span>
+          <button id="langBtn" class="lang">தமிழ்</button>
+        </div>
+        <div id="fwLine" class="ftr-meta mono">&mdash;</div>
+      </footer>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
